@@ -14,7 +14,7 @@ class TweetIndex:
     def __init__(self):
         self.list_of_tweets = {}
         self.word_index = {}
-        self.valid_tweet_timestamp_set = set()
+        self.initial_tweet_id_set = set()
 
     # Starter code--please override
     def create_word_index(self, tweet, timestamp) -> dict():
@@ -36,13 +36,14 @@ class TweetIndex:
         for row in list_of_timestamps_and_tweets:
             timestamp = int(row[0])
             tweet = str(row[1])
-            self.valid_tweet_timestamp_set.add(timestamp)
+            self.initial_tweet_id_set.add(timestamp)
             self.list_of_tweets[timestamp] = tweet
             self.create_word_index(tweet, timestamp)
 
     def get_tweet_list(self, timestamps: list) -> List[Tuple[str, int]]:
         tweet_list = []
-        for timestamp in timestamps:
+        timestamps.sort(reverse=True)
+        for timestamp in timestamps[0:5]:
             tweet = self.list_of_tweets[timestamp]
             tweet_list.append([tweet, timestamp])
 
@@ -52,6 +53,12 @@ class TweetIndex:
         word_set = set()
         if word in self.word_index:
             word_set.update(self.word_index[word])
+        elif word[0] == '!':
+            word = word[1:]
+            if word in self.word_index:
+                word_set.update(self.initial_tweet_id_set.difference(self.word_index[word]))
+            else:
+                word_set.update(self.initial_tweet_id_set)
         return word_set
             
     def eval_expression(self, queries_queue: deque, curr_word: str) -> set():
@@ -98,7 +105,6 @@ class TweetIndex:
             return None
                 
 
-    # Starter code--please override
     def search(self, query: str) -> List[Tuple[str, int]]:
         """
         NOTE: Please update this docstring to reflect the updated specification of your search function
@@ -116,19 +122,6 @@ class TweetIndex:
         tweet_set = self.eval_expression(queries_queue, queries_queue.popleft())
         return self.get_tweet_list(list(tweet_set))
 
-        """
-        for tweet, timestamp in self.list_of_tweets:
-            words_in_tweet = tweet.split(" ")
-            tweet_contains_query = True
-            for word in list_of_words:
-                if word not in words_in_tweet:
-                    tweet_contains_query = False
-                    break
-            if tweet_contains_query and timestamp > result_timestamp:
-                result_tweet, result_timestamp = tweet, timestamp
-        return [(result_tweet, result_timestamp)] if result_timestamp != -1 else []
-        """
-        
 
 if __name__ == "__main__":
     # A full list of tweets is available in data/tweets.csv for your use.
@@ -146,7 +139,7 @@ if __name__ == "__main__":
 
     ti = TweetIndex()
     ti.process_tweets(list_of_tweets)
-    print(ti.search('hello & (google | neeva) & (bob | jack)'))
+    print(ti.search('hello & nee'))
     #print(ti.search('hello & neeva'))
     #print(ti.search("hello"))
     #print(ti.search("hello me"))
