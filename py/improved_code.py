@@ -145,6 +145,9 @@ class TweetIndex:
         :return: a list of tuples of the form (tweet text, tweet timestamp), ordered by highest timestamp tweets first. 
         If no such tweet exists, returns [('', -1)].
         """
+        if query == "":
+            return [('', -1)]
+            
         #creates a queue for all query elements, FIFO order
         queries_queue = deque()
         for word in query.split(" "): 
@@ -176,24 +179,10 @@ if __name__ == "__main__":
     ti = TweetIndex()
     ti.process_tweets(list_of_tweets)
 
-    start = time.time()
-    print(ti.search("neeva"))
-    print(ti.search("hello & (me | neeva)"))
-    print(ti.search("hello & (!me | neeva)"))
-    print(ti.search("neeva & (jack | (hello & bob))"))
-    print(ti.search("neeva & (hi | (jack & bob))"))
-    print(ti.search("neeva & (hello & (jack | bob))"))
-    print(ti.search("neeva & (hello & (bob | jack))"))
-    print(ti.search("hello & this & !bob"))
-    print(ti.search("bob | bye | me"))
-    print(ti.search("bob | bye | me | stuff"))
-    print(ti.search("notinanytweets"))
-    print(ti.search("!notinanytweets"))
-    print(ti.search("neeva & worl"))
+    print(ti.search(""))
+    
 
-    end = time.time()
-
-    print(f"Success! Completed in {end-start}")
+    print(f"Success!")
 
     
     #print("Success!")

@@ -43,7 +43,7 @@ class TestSearch(unittest.TestCase):
         ti_starter.search("notinanytweets")
         end = time.time()
         ti_starter_time = end-start
-        print(f"Starter search time: {ti_starter_time} vs. improved search time{ti_time}")
+        print(f"Starter search time: {ti_starter_time} vs. improved search time: {ti_time}")
 
         if ti_time < ti_starter_time:
             print(f"Improved Noovi TI search is {ti_starter_time/ti_time} times faster than starter Noovi TI search!")
@@ -66,6 +66,7 @@ class TestSearch(unittest.TestCase):
         ti = TweetIndex()
         ti.process_tweets(list_of_tweets)
         print(f"\n---Starting basic test cases---")
+        assert ti.search("") == [('', -1)]
         assert ti.search("neeva") == [('hello this is also neeva', 15), ('hello neeva this is bob', 11), ('hello neeva this is neeva', 10), ('neeva', 7), ('hello neeva me', 5)]
         assert ti.search("nEeVa") == ti.search("neeva")
         assert ti.search("hello & me") == [('hello not me', 14), ('hello me', 13), ('hello this is me', 6), ('hello neeva me', 5)]
