@@ -12,7 +12,7 @@ How do we improve the speed when searching in a large dataset?
 - I approached this first problem by thinking about that time limiting factor when searching through large datasets. Each query word is evaluated against every tweet in the dataset. This is the bottleneck when the size of the dataset increases. Iterating through every word in every tweet to match every query word is redundant, so I started thinking about useful data structures. A hashmap (dictionary) seemed ideal because we can iterate through every word in the dataset once and store those words as keys with their corresponding tweets (timestamps) as a set of values. This way, we can match query words with a simple lookup instead of iterating through the entire dataset again.
 
 How do we return the top 5 most recent tweets instead of just the most recent?
-- Well this objective is inheriently, we just maintain a list of the 5 most recent tweets instead of just a single value, probably with a priority queue.
+- Well this objective is inheriently simple, we just maintain a list of the 5 most recent tweets instead of just a single value, probably with a priority queue.
 - However, thinking back to my word index data structure approach, I realized we can just maintain a set of valid tweets after each logical operator. Because this method already cuts down on the dataset iteration to 1, we can just maintain the entire valid set without any significant tradeoff to speed. After all queries are finished, we can simply update the set by sorting and taking the top 5 greatest values.
 
 How do we implement logical operators like '&', '|', '!', and '()'?
