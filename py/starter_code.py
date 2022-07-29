@@ -48,13 +48,55 @@ class TweetIndex:
 
         return tweet_list
 
-
-    def evaluate_word(self, word: str, operator: int) -> None:
+    def eval_word(self, word) -> set():
+        word_set = set()
         if word in self.word_index:
-            if operator == AND:
-                self.valid_tweet_timestamp_set = self.valid_tweet_timestamp_set.intersection(self.word_index[word])
-            elif operator == OR:
-                self.valid_tweet_timestamp_set = self.valid_tweet_timestamp_set.union(self.word_index[word])
+            word_set.update(self.word_index[word])
+        return word_set
+            
+    def eval_expression(self, queries_queue: deque, curr_word: str) -> set():
+        operators = {'&': AND, '|': OR}
+        valid_sets = []
+        operator = 0
+
+        if curr_word[0] == '(':
+            valid_sets.append(self.eval_expression(queries_queue, curr_word[1:]))
+        else:
+            valid_sets.append(self.eval_word(curr_word))
+
+        while queries_queue:
+            close_parenthesis_flag = 0
+            curr_word = queries_queue.popleft()
+            if curr_word[0] == '(':
+                valid_sets.append(self.eval_expression(queries_queue, curr_word[1:]))
+            elif curr_word[-1] == ')':
+                valid_sets.append(self.eval_word(curr_word[:-1]))
+                close_parenthesis_flag = 1
+            elif curr_word not in operators:
+                valid_sets.append(self.eval_word(curr_word))
+            elif curr_word in operators:
+                operator = operators[curr_word]
+            else:
+                print("error lol")
+
+            if len(valid_sets) > 1:
+                if operator == AND:
+                    new_valid_set = valid_sets.pop().intersection(valid_sets.pop())
+                    valid_sets.append(new_valid_set)
+                elif operator == OR:
+                    new_valid_set = valid_sets.pop().union(valid_sets.pop())
+                    valid_sets.append(new_valid_set)
+                
+                if close_parenthesis_flag:
+                    break
+
+        
+        if len(valid_sets) == 1:
+            return valid_sets.pop()
+        else:
+            print(f"error at the end: {valid_sets}")
+            return None
+                
 
     # Starter code--please override
     def search(self, query: str) -> List[Tuple[str, int]]:
@@ -67,18 +109,12 @@ class TweetIndex:
         :return: a list of tuples of the form (tweet text, tweet timestamp), ordered by highest timestamp tweets first. 
         If no such tweet exists, returns empty list.
         """
-        q = deque()
+        queries_queue = deque()
         for word in query.split(" "):
-            q.append(word)
+            queries_queue.append(word)
 
-        operators = ['&', '|']
-        while q:
-            curr_word = q.popleft()
-            if curr_word not in operators:
-                self.evaluate_word(curr_word, AND)
-
-        tweet_list = self.get_tweet_list(list(self.valid_tweet_timestamp_set))
-        return tweet_list
+        tweet_set = self.eval_expression(queries_queue, queries_queue.popleft())
+        return self.get_tweet_list(list(tweet_set))
 
         """
         for tweet, timestamp in self.list_of_tweets:
@@ -110,7 +146,7 @@ if __name__ == "__main__":
 
     ti = TweetIndex()
     ti.process_tweets(list_of_tweets)
-    print(ti.search('hello neeva'))
+    print(ti.search('hello & (google | neeva) & (bob | jack)'))
     #print(ti.search('hello & neeva'))
     #print(ti.search("hello"))
     #print(ti.search("hello me"))
